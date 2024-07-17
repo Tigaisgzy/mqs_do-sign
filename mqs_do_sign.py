@@ -68,7 +68,6 @@ def send_QQ_email_plain(content):
     # 设置邮件主题为今天的日期和星期
     msg['From'] = f'{sender}'
     msg['To'] = os.getenv('EMAIL_ADDRESS')
-    # msg['To'] = '2951509921@qq.com'
     msg['Subject'] = f'{formatted_date}'  # 设置邮件主题
 
     try:
