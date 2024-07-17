@@ -1,37 +1,51 @@
-name: tb_dosing
-# 测试的话打开这个来测试变量值之类的是否填写正确
-# on:
-#   push:  # 任何推送到仓库都会触发这个工作流
-
+name: mqs_dosing
 #on:
 #  schedule:
 #    - cron: '50 10 * * *' # 10对应的是北京时间晚上六点 50是分钟 表示每天晚上六点五十执行，可以改成任意时间测试
-
 on:
- schedule: # 每天下午18点执行 时差为 +8
-   - cron: '0 10 * * *'
-
+  schedule: # 每天下午18点执行 时差为 +8
+    - cron: '0 10 * * *'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+
+      - name: Check if should run
+        id: check
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const startDate = new Date('2024-07-17T10:00:00Z'); // 设置工作流开始的日期和时间
+            const currentDate = new Date();
+            const diffTime = Math.abs(currentDate - startDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            core.setOutput('shouldRun', diffDays <= 60 ? 'true' : 'false');
+
+      - name: Run only if within sixty days
+        if: steps.check.outputs.shouldRun == 'true'
+        run: echo "This job runs only within the first sixty days."
+
       - name: Set up Python 3.11
+        if: steps.check.outputs.shouldRun == 'true'
         uses: actions/setup-python@v2
         with:
           python-version: '3.11'
 
       - name: Install dependencies
+        if: steps.check.outputs.shouldRun == 'true'
         run: |
           python -m pip install --upgrade pip
           pip install requests pytz lxml 
 
       - name: Run python script
+        if: steps.check.outputs.shouldRun == 'true'
         env:
           USERNAME: ${{ secrets.USERNAME }}
           PASSWORD: ${{ secrets.PASSWORD }}
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
         run: |
           python mqs_do_sign.py || echo "Script failed with exit code $?"
+
         
