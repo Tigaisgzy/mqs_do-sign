@@ -33,5 +33,5 @@ jobs:
           PASSWORD: ${{ secrets.PASSWORD }}
           EMAIL_ADDRESS: ${{ secrets.EMAIL_ADDRESS }}
         run: |
-          python mqcs_do_sign.py || echo "Script failed with exit code $?"
+          python mqs_do_sign.py || echo "Script failed with exit code $?"
         
